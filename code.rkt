@@ -55,7 +55,8 @@
                  (Binding 'equal? (PrimV 'equal?))
                  (Binding 'substring (PrimV 'substring))
                  (Binding 'strlen (PrimV 'strlen))
-                 (Binding 'error (PrimV 'error))))
+                 (Binding 'error (PrimV 'error))
+                 (Binding 'println (PrimV 'println))))
 
 ;; reserved-keywords - a list of key-words
 (define reserved-keywords '(if lambda let = in end : else))
@@ -185,8 +186,19 @@
        [(list v)
         (error 'interp-prim "SHEQ: user-error ~a" (serialize v))]
        [_ (error 'interp-prim "SHEQ: Incorrect number of arguments, expected 1, got ~a" (length args))])]
+    ['println
+     (match args
+       [(list s)
+        (if (string? s)
+            (begin
+              (displayln s)
+              #t)
+            
+            (error 'interp-prim "SHEQ: Attempted to print a non-string value, got ~a" s))]
+       [_ (error 'interp-prim "SHEQ: Incorrect number of arguments, expected 1, got ~a" (length args))])]
     [_
      (error 'interp-prim "SHEQ: Invalid PrimV op, got ~a" args)]))
+
 
 ;; ---- Parser ---- 
 ;; parse - takes a S-exp and returns concrete syntax in ExprC AST
@@ -346,6 +358,11 @@
 
 (check-equal? (interp (IfC (AppC (IdC 'equal?) (list (NumC 81) (NumC 81)))
                            (IdC 'true) (IdC 'false)) top-env) #t)
+
+;; interp 'println
+(check-equal? (interp (AppC (IdC 'println) (list (StringC "Hello World from interp"))) top-env) #t)
+
+
 ;; ---- interp error check ---- 
 (check-exn #rx"SHEQ: An unbound identifier" (lambda () (interp (IdC 'x) '())))
 
@@ -367,6 +384,14 @@
 (check-exn #rx"SHEQ: Attempted to apply non function value"
            (lambda ()
              (interp (AppC (NumC 9) (list (NumC 12))) top-env)))
+
+;; interp println error checking
+(check-exn #rx"SHEQ: Attempted to print a non-string value"
+           (lambda ()
+             (interp (AppC (IdC 'println) (list (NumC 5))) top-env)))
+(check-exn #rx"SHEQ: Incorrect number of arguments"
+           (lambda ()
+             (interp (AppC (IdC 'println) (list (NumC 5) (StringC "bye"))) top-env)))
 
 ;; ---- serialize tests ----
 (check-equal? (serialize '32) "32")
