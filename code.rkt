@@ -284,7 +284,7 @@
     [(list 'lambda (list (? symbol? args) ...) ': body)
      (define args-list (cast args (Listof Symbol)))
      (if (distinct-args? args-list)
-         (LamC (cast args (Listof Symbol)) (parse body))
+         (LamC args-list (parse body))
          (error 'parse "SHEQ: Lambda args list is invalid, duplicate parameters found, ~a" args-list))]
     [(list f args ...)
      (AppC (parse f) (for/list : (Listof ExprC) ([a args]) (parse a)))]
