@@ -276,7 +276,7 @@
        [(ormap reserved-symbol? args-list)
         (error 'parse "SHEQ: let binding list is invalid, reserved symbol was used ~a" args-list)]
        [else (AppC 
-              (LamC (cast args (Listof Symbol)) (parse in-body)) 
+              (LamC args-list (parse in-body)) 
               (for/list : (Listof ExprC) ([v vals]) 
                 (parse (cast v Sexp))))])]
     [(list 'if v iftrue iffalse)
