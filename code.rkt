@@ -57,7 +57,10 @@
                  (Binding 'strlen (PrimV 'strlen))
                  (Binding 'error (PrimV 'error))
                  (Binding 'println (PrimV 'println))
-                 (Binding 'read-num (PrimV 'read-num))))
+                 (Binding 'read-num (PrimV 'read-num))
+                 (Binding 'read-str (PrimV 'read-str))
+                 ; (Binding 'seq (PrimV 'seq))
+                 (Binding '++ (PrimV '++))))
 
 ;; reserved-keywords - a list of key-words
 (define reserved-keywords '(if lambda let = in end : else))
@@ -92,6 +95,8 @@
             (interp if-f env))]
        [else (error 'interp "SHEQ: If expected boolean test, got ~a" test-val)])]
     [(LamC params body) (CloV params body env)]
+    [(AppC (IdC 'seq) exprs)
+     (interp-seq exprs env)]
     [(AppC lam args)
      (define f-val (interp lam env))
      (define arg-vals
@@ -112,6 +117,13 @@
        [else
         (error 'interp "SHEQ: Attempted to apply non function value ~a" f-val)])]         
     [(IdC id) (get-binding-val id env)]))
+
+;; interp-seq - takes a list of ExprC's to interpret them sequentially, returns the last expression's Value
+(define (interp-seq [exprs : (Listof ExprC)] [env : Env]) : Value
+       (match exprs
+         ['() (error 'interp "SHEQ: seq needs at least 1 expression.")]
+         [(list f) (interp f env)]
+         [(cons f rest) (begin (interp f env) (interp-seq rest env))]))
 
 ;; interp-prim - takes a PrimV and a list of Values, returns a Value
 (define (interp-prim [p : PrimV] [args : (Listof Value)]) : Value
@@ -223,6 +235,10 @@
               (error 'interp-prim "SHEQ: read-str read EOF")
               input))]
        [_ (error 'interp-prim "SHEQ: Incorrect number of arguments, expected 0, got ~a" (length args))])]
+    ['++
+     (match args
+       ['() ""]
+       [_ (apply string-append (map serialize args))])]
     [_
      (error 'interp-prim "SHEQ: Invalid PrimV op, got ~a" args)]))
 
@@ -356,6 +372,14 @@
            (lambda () (top-interp
                        '{{lambda (ignoreit) : {ignoreit {/ 52 {+ 0 0}}}} {lambda (x) : {+ 7 x}}})))
 
+(top-interp
+ '{seq
+   {println "What is your favorite number?"}
+   {let ([n = {read-num}])
+     in
+     {println {++ "Interesting, you picked " n ". What a choice!"}}
+     end}})
+
 ;; ---- interp tests ----
 (check-equal? (interp (IdC 'true) top-env) #t)
 
@@ -385,6 +409,10 @@
 
 (check-equal? (interp (IfC (AppC (IdC 'equal?) (list (NumC 81) (NumC 81)))
                            (IdC 'true) (IdC 'false)) top-env) #t)
+
+;; interp with seq
+(check-exn #rx"SHEQ: seq needs at least 1 expression."
+           (lambda () (interp (AppC (IdC 'seq) '()) top-env)))
 
 
 ;; ---- interp error check ---- 
@@ -560,7 +588,7 @@
 (check-exn #rx"SHEQ: Incorrect number of arguments"
            (lambda () (interp-prim (PrimV 'read-num) (list 4 2 1))))
 
-;; PrimV 'read-str test
+;; PrimV 'read-str tests
 (check-equal? (with-input-from-string "hello\n"
                 (lambda () (interp-prim (PrimV 'read-str) '()))) "hello")
 
@@ -571,6 +599,10 @@
            (lambda () 
            (with-input-from-string ""
                 (lambda () (interp-prim (PrimV 'read-str) '())))))
+
+;; PrimV '++ tests
+(check-equal? (interp-prim (PrimV '++) (list 4 "hello" #f)) "4\"hello\"false")
+(check-equal? (interp-prim (PrimV '++) '()) "")
 
 ;; ---- Helper Tests ----
 
