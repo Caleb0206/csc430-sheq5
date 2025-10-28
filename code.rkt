@@ -56,7 +56,8 @@
                  (Binding 'substring (PrimV 'substring))
                  (Binding 'strlen (PrimV 'strlen))
                  (Binding 'error (PrimV 'error))
-                 (Binding 'println (PrimV 'println))))
+                 (Binding 'println (PrimV 'println))
+                 (Binding 'read-num (PrimV 'read-num))))
 
 ;; reserved-keywords - a list of key-words
 (define reserved-keywords '(if lambda let = in end : else))
@@ -196,6 +197,22 @@
             
             (error 'interp-prim "SHEQ: Attempted to print a non-string value, got ~a" s))]
        [_ (error 'interp-prim "SHEQ: Incorrect number of arguments, expected 1, got ~a" (length args))])]
+    ['read-num
+     (match args
+       ['()
+        (begin
+          (display "> ")
+          ;; (flush-output)
+          (define input (read-line))
+          (cond
+            [(eof-object? input)
+             (error 'interp-prim "SHEQ: read-num read EOF")]
+            [else
+             (define num (string->number input))
+             (if (real? num)
+                 num
+                 (error 'interp-prim "SHEQ: read-num expected a Number, got ~a" input))]))
+        ])]
     [_
      (error 'interp-prim "SHEQ: Invalid PrimV op, got ~a" args)]))
 
@@ -359,9 +376,6 @@
 (check-equal? (interp (IfC (AppC (IdC 'equal?) (list (NumC 81) (NumC 81)))
                            (IdC 'true) (IdC 'false)) top-env) #t)
 
-;; interp 'println
-(check-equal? (interp (AppC (IdC 'println) (list (StringC "Hello World from interp"))) top-env) #t)
-
 
 ;; ---- interp error check ---- 
 (check-exn #rx"SHEQ: An unbound identifier" (lambda () (interp (IdC 'x) '())))
@@ -385,13 +399,7 @@
            (lambda ()
              (interp (AppC (NumC 9) (list (NumC 12))) top-env)))
 
-;; interp println error checking
-(check-exn #rx"SHEQ: Attempted to print a non-string value"
-           (lambda ()
-             (interp (AppC (IdC 'println) (list (NumC 5))) top-env)))
-(check-exn #rx"SHEQ: Incorrect number of arguments"
-           (lambda ()
-             (interp (AppC (IdC 'println) (list (NumC 5) (StringC "bye"))) top-env)))
+
 
 ;; ---- serialize tests ----
 (check-equal? (serialize '32) "32")
@@ -514,6 +522,30 @@
 (check-exn #rx"SHEQ: Invalid PrimV op"
            (lambda () (interp-prim (PrimV 'dothis) (list 9))))
 
+;; PrimV 'println tests
+(check-equal? (interp-prim (PrimV 'println) (list "test: Hello World from interp")) #t)
+
+(check-exn #rx"SHEQ: Attempted to print a non-string value"
+           (lambda ()
+             (interp-prim (PrimV 'println) (list 5))))
+(check-exn #rx"SHEQ: Incorrect number of arguments"
+           (lambda ()
+             (interp-prim (PrimV 'println) (list "a" "c"))))
+
+
+;; PrimV 'read-num test
+(check-equal? (with-input-from-string "52\n"
+                (lambda () (interp-prim (PrimV 'read-num) '()))) 52)
+
+(check-exn #rx"SHEQ: read-num expected a Number"
+           (lambda () 
+           (with-input-from-string "five"
+                (lambda () (interp-prim (PrimV 'read-num) '())))))
+
+(check-exn #rx"SHEQ: read-num read EOF"
+           (lambda () 
+           (with-input-from-string ""
+                (lambda () (interp-prim (PrimV 'read-num) '())))))
 
 ;; ---- Helper Tests ----
 
