@@ -194,7 +194,6 @@
             (begin
               (displayln s)
               #t)
-            
             (error 'interp-prim "SHEQ: Attempted to print a non-string value, got ~a" s))]
        [_ (error 'interp-prim "SHEQ: Incorrect number of arguments, expected 1, got ~a" (length args))])]
     ['read-num
@@ -211,8 +210,19 @@
              (define num (string->number input))
              (if (real? num)
                  num
-                 (error 'interp-prim "SHEQ: read-num expected a Number, got ~a" input))]))
-        ])]
+                 (error 'interp-prim "SHEQ: read-num expected a Number, got ~a" input))]))]
+       [_ (error 'interp-prim "SHEQ: Incorrect number of arguments, expected 0, got ~a" (length args))])]
+    ['read-str
+     (match args
+       ['()
+        (begin
+          (display "> ")
+          ;; (flush-output)
+          (define input (read-line))
+          (if (eof-object? input)
+              (error 'interp-prim "SHEQ: read-str read EOF")
+              input))]
+       [_ (error 'interp-prim "SHEQ: Incorrect number of arguments, expected 0, got ~a" (length args))])]
     [_
      (error 'interp-prim "SHEQ: Invalid PrimV op, got ~a" args)]))
 
@@ -301,8 +311,8 @@
 (define (create-env [args : (Listof Symbol)] [vals : (Listof Value)] [env : Env]) : Env
   (match* (args vals)
     [('() '()) env]
-    [('() _) (error "SHEQ: too many values were passed in application ~a ~a" args vals)]
-    [(_ '()) (error "SHEQ: too few values were passed in application ~a ~a" args vals)]
+    [('() _) (error 'create-env "SHEQ: too many values were passed in application ~a ~a" args vals)]
+    [(_ '()) (error 'create-env "SHEQ: too few values were passed in application ~a ~a" args vals)]
     [((cons fa ra) (cons fv rv))
      (create-env ra rv (cons (Binding fa fv) env))]))
 
@@ -546,6 +556,21 @@
            (lambda () 
            (with-input-from-string ""
                 (lambda () (interp-prim (PrimV 'read-num) '())))))
+
+(check-exn #rx"SHEQ: Incorrect number of arguments"
+           (lambda () (interp-prim (PrimV 'read-num) (list 4 2 1))))
+
+;; PrimV 'read-str test
+(check-equal? (with-input-from-string "hello\n"
+                (lambda () (interp-prim (PrimV 'read-str) '()))) "hello")
+
+(check-exn #rx"SHEQ: Incorrect number of arguments"
+           (lambda () (interp-prim (PrimV 'read-str) (list "s" "b" "c"))))
+
+(check-exn #rx"SHEQ: read-str read EOF"
+           (lambda () 
+           (with-input-from-string ""
+                (lambda () (interp-prim (PrimV 'read-str) '())))))
 
 ;; ---- Helper Tests ----
 
