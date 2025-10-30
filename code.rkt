@@ -363,6 +363,16 @@
                   end
                   }) "107")
 
+(check-equal? (top-interp '{seq
+                            {let ([n = 5])
+                              in
+                              {+ 1 n}
+                              end}
+                            {let ([x = 2])
+                              in
+                              {* 2 x}
+                              end}}) "4")
+
 ;; incorect num of arguments (from handin)
 (check-exn #rx"SHEQ: Incorrect number of arguments for CloV"
            (lambda () (top-interp '{{lambda () : 19} 17})))
@@ -372,7 +382,7 @@
            (lambda () (top-interp
                        '{{lambda (ignoreit) : {ignoreit {/ 52 {+ 0 0}}}} {lambda (x) : {+ 7 x}}})))
 
-(top-interp
+#;(top-interp
  '{seq
    {println "What is your favorite number?"}
    {let ([n = {read-num}])
