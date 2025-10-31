@@ -60,10 +60,10 @@
                  (Binding 'read-num (PrimV 'read-num))
                  (Binding 'read-str (PrimV 'read-str))
                  (Binding '++ (PrimV '++))
-                 (Binding 'rnd (PrimV 'rnd))
-                 (Binding 'round (PrimV 'round))
-                 (Binding 'ceil (PrimV 'ceil))
-                 (Binding 'floor (PrimV 'floor))))
+                 (Binding 'rnd (PrimV 'rnd)) ; PrimV rnd - Random Number - for the Game
+                 (Binding 'round (PrimV 'round)) ; PrimV round - Rounds Number - for the Game
+                 (Binding 'ceil (PrimV 'ceil)) ; PrimV ceil - Rounds up a Number - for the Game
+                 (Binding 'floor (PrimV 'floor)))) ; PrimV floor - Rounds down a Number - for the Game
 
 ;; reserved-keywords - a list of key-words
 (define reserved-keywords '(if lambda let = in end : else))
@@ -242,6 +242,7 @@
      (match args
        ['() ""]
        [_ (apply string-append (map val->string args))])]
+    ;; PrimV's for the Game implementation (rnd, round, ceil, floor)
     ['rnd (random)]
     ['round (match args
               [(list (? real? n)) (round n)]
@@ -367,7 +368,6 @@
     [(_ '()) (error 'create-env "SHEQ: too few values were passed in application ~a ~a" args vals)]
     [((cons fa ra) (cons fv rv))
      (create-env ra rv (cons (Binding fa fv) env))]))
-
 
 ;; ---- Tests ----
 
@@ -709,7 +709,83 @@
              (interp-prim (PrimV 'floor) (list 32.1 23))))
 
 
-;; ---- SHEQ5 GAME ----
+;; ------------------------------------- SHEQ5 GAME ------------------------------------------------
+
+;; ----------------------------- Sample Run of the Game in Comments -------------------
+
+;  Welcome to the 
+;      ______            _        _______  _______  _______  _       
+;     (  __  \ |\     /|( (    /|(  ____ \(  ____ \(  ___  )( (    /|
+;     | (  \  )| )   ( ||  \  ( || (    \/| (    \/| (   ) ||  \  ( |
+;     | |   ) || |   | ||   \ | || |      | (__    | |   | ||   \ | |
+;     | |   | || |   | || (\ \) || | ____ |  __)   | |   | || (\ \) |
+;     | |   ) || |   | || | \   || | \_  )| (      | |   | || | \   |
+;     | (__/  )| (___) || )  \  || (___) || (____/\| (___) || )  \  |
+;     (______/ (_______)|/    )_)(_______)(_______/(_______)|/    )_)
+
+;                                  .  .   ~~//====......          __--~ ~~
+;                  -.            \_|//     |||\\  ~~~~~~::::... /~
+;               ___-==_       _-~o~  \/    |||  \            _/~~-
+;       __---~~~.==~||\=_    -_--~/_-~|-   |\   \        _/~
+;   _-~~     .=~    |  \-_    '-~7  /-   /  ||    \      /
+; .~       .~       |   \ -_    /  /-   /   ||      \   /
+;/  ____  /         |     \ ~-_/  /|- _/   .||       \ /
+;|~~    ~~|--~~~~--_ \     ~==-/   | \~--===~~        .\
+;         '         ~-|      /|    |-~\~~       __--~~
+;                     |-~~-_/ |    |   ~\_   _-~            /\
+;                          /  \     \__   \/~                \__
+;                      _--~ _/ | .-~~____--~-/                  ~~==.
+;                     ((->/~   '.|||' -_|    ~~-/ ,              . _||
+;                                -_     ~\      ~~---l__i__i__i--~~_/
+;                               _-~-__   ~)  \--______________--~~
+;                              //.-~~~-~_--~- |-------~~~~~~~~
+;                                     //.-~~~--\
+;What is your name, adventurer?
+; > AidenAndCaleb
+;Your player name is: AidenAndCaleb and your lucky number is 0.538
+
+;╭──────────────────────────────  Floor #: 1  ──────────────────────────────╮
+;10 HP (♥)  |  2D6 ATTACK (✶)  |  0.65 ACCURACY (→)  |  0.1 DEF (❖)
+;              .7
+;            .'/
+;           / /
+;          / /
+;         / /
+;        / /
+;       / /                             
+;          / /
+;     / /         
+;    / /          
+;  __|/
+;,-\__\
+;|f-"Y\|
+;\()7L/
+; cgD                            __ _
+; |\(                          .'  Y '>,
+;  \ \                        / _   _   \
+;   \\\                       )(_) (_)(|}
+;    \\\                      {  4A   } /
+;     \\\                      \uLuJJ/\l
+;      \\\                     |3    p)/
+;       \\\___ __________      /nnm_n//
+;       c7___-__,__-)\,__)(".  \_>-<_/D
+;                  //V     \_"-._.__G G_c__.-__<"/ ( \
+;                         <"-._>__-,G_.___)\   \7\
+;                        ("-.__.| \"<.__.-" )   \ \
+;                        |"-.__"\  |"-.__.-".\   \ \
+;                        ("-.__"". \"-.__.-".|    \_\
+;                        \"-.__""|!|"-.__.-".)     \ \
+;                         "-.__""\_|"-.__.-"./      \ l
+;                          ".__""">G>-.__.-">       .--,_
+;A hollow clatter echoes through the corridor as a skeleton lurches into view, eye sockets glowing faintly.
+
+;Prepare to fight: Skeleton (25.0♥)!
+;What will you do? [attack / defend]
+; > defend
+;With a dry hiss, the skeleton lunges forward, jabbing its rusted blade toward your chest.
+;You took 2.7 damage. 
+
+;; ---------------------------------- End of Sample Run -----------------------------------------------------------
 
 ;; Main let block
 ;; - String definitions
@@ -721,7 +797,7 @@
 ;;
 ;; Secondary Let block body -> Gameplay loop
 
-(define dungeon-game : Sexp 
+(define example-program : Sexp 
   '{let
        ;; ---- CONSTS & STRUCTS ----
        ([welcome-string = "
@@ -763,7 +839,7 @@ Welcome to the
                            {if {equal? key "name"} 
                                name 
                                {if {equal? key "hp"}
-                                   {round hp}
+                                   hp
                                    {if {equal? key "atk"}
                                        atk
                                        {if {equal? key "rolls"}
@@ -1001,7 +1077,7 @@ Welcome to the
                                                                         damage
                                                                         " damage."}}}
                                                           {create-player {player "name"}
-                                                                         {- {player "hp"} damage}
+                                                                         {round-to-place {- {player "hp"} damage} 0.001}
                                                                          {player "atk"}
                                                                          {player "rolls"}
                                                                          {player "def"}
@@ -1018,8 +1094,8 @@ Welcome to the
                                                {println {++ "Your swing connects, killing the "
                                                             {monster "name"}
                                                             " in a single, swift blow ("
-															player-dmg
-															"✶)!!"}}
+                                                            player-dmg
+                                                            "✶)!!"}}
                                                player}
                                               {seq
                                                {println {++ "Your attack wasn't enough kill "
@@ -1049,8 +1125,7 @@ Welcome to the
          ;; ---- MAIN GAMEPLAY LOOP ----
          {let ([chest-enc =
                           {create-encounter 
-                           "The air grows still as you enter
-                              — at the center of the chamber rests a lone chest, bathed in a thin shaft of light."
+                           "The air grows still... at the center of the chamber rests a lone chest, bathed in light."
                            {lambda (player) :
                              {seq
                               {println "Open chest? [Y/N]"}
@@ -1150,12 +1225,12 @@ Welcome to the
                                    {println {++ "You are healed to "
                                                 {if
                                                  {<= new-health 10}
-                                                 new-health
+                                                 {round-to-place new-health 0.001}
                                                  10}
                                                 " HP (♥)!"}} 
                                    {create-player {player "name"}
                                                   {if {<= new-health 10}
-                                                      new-health
+                                                      {round-to-place new-health 0.001}
                                                       10}
                                                   {player "atk"}
                                                   {player "rolls"}
@@ -1204,9 +1279,9 @@ Welcome to the
                                                  {player "acc"} " ACCURACY (→)  |  "
                                                  {player "def"} " DEF (❖)" "\n"}}
                                     {self self {+ floor# 1}
-                                      {if {<= {rnd} 0.7} 
-										{handle-battle player monster floor-mod} 
-										{handle-encounter player encounter}}}}    
+                                          {if {<= {rnd} 0.7} 
+                                              {handle-battle player monster floor-mod} 
+                                              {handle-encounter player encounter}}}}    
                                    end}}}]) 
              in 
              {main-loop main-loop 1 player-obj} 
@@ -1215,11 +1290,4 @@ Welcome to the
         end}}
      end})
 
-(top-interp dungeon-game)
-
-
-
-
-
-
-
+; (top-interp example-program)
