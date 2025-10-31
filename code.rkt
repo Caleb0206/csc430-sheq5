@@ -2,7 +2,7 @@
 (require typed/rackunit)
 
 ;; SHEQ5
-;; Status statement here.
+;; Fully finished SHEQ5 assignment with game, too.
 
 ;; Data definitions
 
@@ -60,10 +60,10 @@
                  (Binding 'read-num (PrimV 'read-num))
                  (Binding 'read-str (PrimV 'read-str))
                  (Binding '++ (PrimV '++))
-				 (Binding 'rnd (PrimV 'rnd))
-				 (Binding 'round (PrimV 'round))
-				 (Binding 'ceil (PrimV 'ceil))
-				 (Binding 'floor (PrimV 'floor))))
+                 (Binding 'rnd (PrimV 'rnd))
+                 (Binding 'round (PrimV 'round))
+                 (Binding 'ceil (PrimV 'ceil))
+                 (Binding 'floor (PrimV 'floor))))
 
 ;; reserved-keywords - a list of key-words
 (define reserved-keywords '(if lambda let = in end : else))
@@ -123,10 +123,10 @@
 
 ;; interp-seq - takes a list of ExprC's to interpret them sequentially, returns the last expression's Value
 (define (interp-seq [exprs : (Listof ExprC)] [env : Env]) : Value
-       (match exprs
-         ['() (error 'interp "SHEQ: seq needs at least 1 expression.")]
-         [(list f) (interp f env)]
-         [(cons f rest) (begin (interp f env) (interp-seq rest env))]))
+  (match exprs
+    ['() (error 'interp "SHEQ: seq needs at least 1 expression.")]
+    [(list f) (interp f env)]
+    [(cons f rest) (begin (interp f env) (interp-seq rest env))]))
 
 ;; interp-prim - takes a PrimV and a list of Values, returns a Value
 (define (interp-prim [p : PrimV] [args : (Listof Value)]) : Value
@@ -242,16 +242,22 @@
      (match args
        ['() ""]
        [_ (apply string-append (map val->string args))])]
-	['rnd (random)]
-	['round (match args
-			  [(list (? real? n)) (round n)]
-			  [_ (error 'interp-prim "SHEQ: Incorrect number or type of arguments for round procedure, expected 1 real, got ~a" args)])]
-	['ceil (match args
-			  [(list (? real? n)) (ceiling n)]
-			  [_ (error 'interp-prim "SHEQ: Incorrect number or type of arguments for ceil procedure, expected 1 real, got ~a" args)])]
-	['floor (match args
-			  [(list (? real? n)) (floor n)]
-			  [_ (error 'interp-prim "SHEQ: Incorrect number or type of arguments for floor procedure, expected 1 real, got ~a" args)])]
+    ['rnd (random)]
+    ['round (match args
+              [(list (? real? n)) (round n)]
+              [_ (error 'interp-prim
+                        "SHEQ: Incorrect number or type of arguments for round procedure, expected 1 real, got ~a"
+                        args)])]
+    ['ceil (match args
+             [(list (? real? n)) (ceiling n)]
+             [_ (error 'interp-prim
+                       "SHEQ: Incorrect number or type of arguments for ceil procedure, expected 1 real, got ~a"
+                       args)])]
+    ['floor (match args
+              [(list (? real? n)) (floor n)]
+              [_ (error 'interp-prim
+                        "SHEQ: Incorrect number or type of arguments for floor procedure, expected 1 real, got ~a"
+                        args)])]
     [_
      (error 'interp-prim "SHEQ: Invalid PrimV op, got ~a" args)]))
 
@@ -271,16 +277,16 @@
       [else -> throw unknown error])
   ; body
   (match e
-	;; Match Real
+    ;; Match Real
     [(? real? n) (NumC n)]
-	;; Match String
+    ;; Match String
     [(? string? s) (StringC s)]
-	;; Match Id
+    ;; Match Id
     [(? symbol? name)
      (if (reserved-symbol? name)
          (error 'parse "SHEQ: Syntax error, unexpected reserved keyword, got ~e" name)
          (IdC name))]
-	;; Match Let
+    ;; Match Let
     [(list 'let 
            (list (list (? symbol? args) '= vals) ...) 
            'in
@@ -296,17 +302,17 @@
               (LamC args-list (parse in-body)) 
               (for/list : (Listof ExprC) ([v vals]) 
                 (parse (cast v Sexp))))])]
-	;; Match If
+    ;; Match If
     [(list 'if v iftrue iffalse)
      (IfC (parse v) (parse iftrue) (parse  iffalse))]
     ;; Match Lambda
-	[(list 'lambda (list (? symbol? args) ...) ': body)
+    [(list 'lambda (list (? symbol? args) ...) ': body)
      (define args-list (cast args (Listof Symbol)))
      (if (distinct-args? args-list)
          (LamC args-list (parse body))
          (error 'parse "SHEQ: Lambda args list is invalid, duplicate parameters found, ~a" args-list))]
     ;; Match Application
-	[(list f args ...)
+    [(list f args ...)
      (AppC (parse f) (for/list : (Listof ExprC) ([a args]) (parse a)))]
     [other (error 'parse "SHEQ: Syntax error, got ~e" other)]))
 
@@ -413,12 +419,12 @@
                        '{{lambda (ignoreit) : {ignoreit {/ 52 {+ 0 0}}}} {lambda (x) : {+ 7 x}}})))
 
 #;(top-interp
- '{seq
-   {println "What is your favorite number?"}
-   {let ([n = {read-num}])
-     in
-     {println {++ "Interesting, you picked " n ". What a choice!"}}
-     end}})
+   '{seq
+     {println "What is your favorite number?"}
+     {let ([n = {read-num}])
+       in
+       {println {++ "Interesting, you picked " n ". What a choice!"}}
+       end}})
 
 ;; ---- interp tests ----
 (check-equal? (interp (IdC 'true) top-env) #t)
@@ -488,6 +494,8 @@
 
 (check-exn #rx"SHEQ: user-error true" (lambda () (interp-prim (PrimV 'error) (list #t))))
 
+
+
 ;; ---- parse Tests ----
 
 (check-equal? (parse '{(lambda (x) : {+ x 1}) 5})
@@ -509,7 +517,8 @@
                (list (NumC 5) 
                      (AppC (IdC '*) (list (NumC 7) (NumC 8))))))
 
-(check-equal? (parse '{if {<= 3 90} 3 90}) (IfC (AppC (IdC '<=) (list (NumC 3) (NumC 90))) (NumC 3) (NumC 90)))
+(check-equal? (parse '{if {<= 3 90} 3 90})
+              (IfC (AppC (IdC '<=) (list (NumC 3) (NumC 90))) (NumC 3) (NumC 90)))
 
 
 ;; parse errors
@@ -535,13 +544,17 @@
 ;; ---- intperp-prim Tests ----
 ;; PrimV '+ tests
 (check-equal? (interp-prim (PrimV '+) (list 8 9)) 17)
-(check-exn #rx"SHEQ: PrimV \\+ expected 2 numbers, got" (lambda () (interp-prim (PrimV '+) (list 8 #t))))
-(check-exn #rx"SHEQ: Incorrect number of arguments" (lambda () (interp-prim (PrimV '+) (list 8 23 3 2))))
+(check-exn #rx"SHEQ: PrimV \\+ expected 2 numbers, got"
+           (lambda () (interp-prim (PrimV '+) (list 8 #t))))
+(check-exn #rx"SHEQ: Incorrect number of arguments"
+           (lambda () (interp-prim (PrimV '+) (list 8 23 3 2))))
 
 ;; PrimV '* tests
 (check-equal? (interp-prim (PrimV '*) (list 8 4)) 32)
-(check-exn #rx"SHEQ: PrimV \\* expected 2 numbers, got" (lambda () (interp-prim (PrimV '*) (list #f #t))))
-(check-exn #rx"SHEQ: Incorrect number of arguments" (lambda () (interp-prim (PrimV '*) (list 2))))
+(check-exn #rx"SHEQ: PrimV \\* expected 2 numbers, got"
+           (lambda () (interp-prim (PrimV '*) (list #f #t))))
+(check-exn #rx"SHEQ: Incorrect number of arguments"
+           (lambda () (interp-prim (PrimV '*) (list 2))))
 
 ;; PrimV '/ tests
 (check-equal? (interp-prim (PrimV '/) (list 33 11)) 3)
@@ -617,13 +630,13 @@
 
 (check-exn #rx"SHEQ: read-num expected a Number"
            (lambda () 
-           (with-input-from-string "five"
-                (lambda () (interp-prim (PrimV 'read-num) '())))))
+             (with-input-from-string "five"
+               (lambda () (interp-prim (PrimV 'read-num) '())))))
 
 (check-exn #rx"SHEQ: read-num read EOF"
            (lambda () 
-           (with-input-from-string ""
-                (lambda () (interp-prim (PrimV 'read-num) '())))))
+             (with-input-from-string ""
+               (lambda () (interp-prim (PrimV 'read-num) '())))))
 
 (check-exn #rx"SHEQ: Incorrect number of arguments"
            (lambda () (interp-prim (PrimV 'read-num) (list 4 2 1))))
@@ -637,8 +650,8 @@
 
 (check-exn #rx"SHEQ: read-str read EOF"
            (lambda () 
-           (with-input-from-string ""
-                (lambda () (interp-prim (PrimV 'read-str) '())))))
+             (with-input-from-string ""
+               (lambda () (interp-prim (PrimV 'read-str) '())))))
 
 ;; PrimV '++ tests
 (check-equal? (interp-prim (PrimV '++) (list 4 "hello" #f)) "4hellofalse")
@@ -668,18 +681,43 @@
 
 
 
+;; tests for SHEQ5 Game
+
+;; value->string tests
+(check-equal? (val->string 3) "3")
+(check-equal? (val->string #t) "true")
+(check-equal? (val->string #f) "false")
+(check-equal? (val->string "s") "s")
+(check-equal? (val->string (CloV '(x) (NumC 4) top-env)) "#<procedure>")
+(check-equal? (val->string (PrimV '+)) "#<primop>")
+
+;; PrimV 'rnd test
+(check-equal? (real? (interp-prim (PrimV 'rnd) '())) #t)
 
 
+;; PrimV 'round tests
+(check-equal? (interp-prim (PrimV 'round) (list 3.1)) 3.0)
+
+(check-exn #rx"SHEQ: Incorrect number or type of arguments for round procedure"
+           (lambda ()
+             (interp-prim (PrimV 'round) (list 32.1 23))))
+
+;; PrimV 'ceil tests
+(check-equal? (interp-prim (PrimV 'ceil) (list 3.1)) 4.0)
+
+(check-exn #rx"SHEQ: Incorrect number or type of arguments for ceil procedure"
+           (lambda ()
+             (interp-prim (PrimV 'ceil) (list 32.1 23))))
+
+;; PrimV 'floor tests
+(check-equal? (interp-prim (PrimV 'floor) (list 3.99)) 3.0)
+
+(check-exn #rx"SHEQ: Incorrect number or type of arguments for floor procedure"
+           (lambda ()
+             (interp-prim (PrimV 'floor) (list 32.1 23))))
 
 
-
-
-
-
-;; ---- SHEQ4 GAME ----
-
-
-
+;; ---- SHEQ5 GAME ----
 
 ;; Main let block
 ;; - String definitions
@@ -692,9 +730,9 @@
 ;; Secondary Let block body -> Gameplay loop
 
 (define dungeon-game : Sexp 
- '{let
-	;; ---- CONSTS & STRUCTS ----
-	([welcome-string = "
+  '{let
+       ;; ---- CONSTS & STRUCTS ----
+       ([welcome-string = "
 Welcome to the
       ______            _        _______  _______  _______  _       
      (  __  \\ |\\     /|( (    /|(  ____ \\(  ____ \\(  ___  )( (    /|
@@ -722,79 +760,89 @@ Welcome to the
                                 _-~-__   ~)  \\--______________--~~
                               //.-~~~-~_--~- |-------~~~~~~~~
                                      //.-~~~--\\"]
-	 [game-over-string = "Game Over"]
-	 ;; Rounds n to a given decimal place dec
-	 ;; Example: n = 3.14159, dec = 0.001, result = 3.142
-	 [round-to-place = {lambda (n dec) : {* dec {round {/ n dec}}}}]
-	 [|| = {lambda (a b) : {if a true {if b true false}}}]
-	 [create-player = {lambda (name hp atk rolls def acc) : {lambda (key) : 
-			 {if {equal? key "name"} 
-				name 
-				{if {equal? key "hp"}
-					hp
-					{if {equal? key "atk"}
-						atk
-						{if {equal? key "rolls"}
-						  rolls
-						  {if {equal? key "def"}
-							  def
-							  {if {equal? key "acc"}
-								acc
-								{if {equal? key "get-dmg"}
-								  {let ([get-dmg = {lambda (self atk rolls total) : 
-												{if {<= rolls 0} 
-												  total 
-												  ;; If rolls left, do (TOTAL + round(RND * ATK))
-												  {self self atk {- rolls 1} {+ total {round {* {rnd} atk}}}}}}]) 
-									in {get-dmg get-dmg atk rolls 0} end}
-								  {error "DGNError: Invalid player key"}}}}}}}}}}]
-	 ;; create-monster - Creates a monster object. The monster has a 
-	 ;;	  name
-	 ;;	  ascii art 
-	 ;;	  3 different intros (intro1-3) - for display on intro to a fight
-	 ;;	  2 different attacks (dmg, proc, atktxt) - 
-	 ;;		dmg is the damage dealt, 
-	 ;;		proc is the how likely the attack is to hit (0-1), 
-	 ;;		atktxt is the flavor text
-	 [create-monster = {lambda (name art intro1 intro2 intro3 dmg1 proc1 atktxt1 dmg2 proc2 atktxt2 hp) : {lambda (key) :
-					 {if {equal? key "name"}
-						name
-						{if {equal? key "art"}
-						  art
-						  {if {equal? key "intro"}
-							; Get random intro
-							{if {<= {rnd} 0.3} intro1 {if {<= {rnd} 0.5} intro2 intro3}}
-							{if {equal? key "atk"}
-							  ; Get random attack
-							  {if {<= {rnd} 0.5}
-								{seq 
-								  {println atktxt1}
-								  {if {<= {rnd} proc1} dmg1 0}}
-								{seq 
-								  {println atktxt2}
-								  {if {<= {rnd} proc2} dmg2 0}}}
-							{if {equal? key "hp"}
-							  hp
-							  {error "DGNError: Invalid monster key"}}}}}}}}]
-	 ;; create-encounter - Creates a random encounter. The encounter has
-	 ;;	  flvrtxt - The flavor text to display when entering the encounter
-	 ;;	  run-enc - (player-obj -> player-obj) A function whose only argument is a player object,
-	 ;;		and whose return type is a modified player object
-	 [create-encounter = {lambda (flvrtxt run-enc) : {lambda (key) : 
-					   {if {equal? key "flvrtxt"}
-						  flvrtxt
-						  {if {equal? key "run-enc"}
-							run-enc
-							{error "DGNError: Invalid encounter key"}}}}}]
-	 )
-	in
-	{seq 
-	  {println welcome-string}
-	  {println "What is your name, adventurer?"}
-	  ;; ---- CHARACTER CREATION & GAMEPLAY FUNCTIONS ----
-	  {let ([player-obj = {create-player {read-str} 10 6 2 0.1 0.65}]
-			[goblin-obj = {create-monster "Sheq" 
-					  "⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣠⣴⣶⣿⣿⣿⣿⣿⣿⣿⣶⣶⣤⣄⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+        [game-over-string = "Game Over"]
+        ;; Rounds n to a given decimal place dec
+        ;; Example: n = 3.14159, dec = 0.001, result = 3.142
+        [round-to-place = {lambda (n dec) : {* dec {round {/ n dec}}}}]
+        [|| = {lambda (a b) : {if a true {if b true false}}}]
+        [create-player =
+                       {lambda (name hp atk rolls def acc) :
+                         {lambda (key) : 
+                           {if {equal? key "name"} 
+                               name 
+                               {if {equal? key "hp"}
+                                   {round hp}
+                                   {if {equal? key "atk"}
+                                       atk
+                                       {if {equal? key "rolls"}
+                                           rolls
+                                           {if {equal? key "def"}
+                                               def
+                                               {if {equal? key "acc"}
+                                                   acc
+                                                   {if {equal? key "get-dmg"}
+                                                       {let ([get-dmg =
+                                                                      {lambda (self atk rolls total) : 
+                                                                        {if {<= rolls 0} 
+                                                                            total 
+                                                         ;; If rolls left, do (TOTAL + round(RND * ATK))                   
+                                                                            {self self atk
+                                                                                  {- rolls 1}
+                                                                                  {+ total {round {* {rnd} atk}}}}}}]) 
+                                                         in {get-dmg get-dmg atk rolls 0} end}
+                                                       {error "DGNError: Invalid player key"}}}}}}}}}}]
+        ;; create-monster - Creates a monster object. The monster has a 
+        ;;	  name
+        ;;	  ascii art 
+        ;;	  3 different intros (intro1-3) - for display on intro to a fight
+        ;;	  2 different attacks (dmg, proc, atktxt) - 
+        ;;		dmg is the damage dealt, 
+        ;;		proc is the how likely the attack is to hit (0-1), 
+        ;;		atktxt is the flavor text
+        [create-monster =
+                        {lambda (name art intro1 intro2 intro3 dmg1 proc1 atktxt1 dmg2 proc2 atktxt2 hp) :
+                          {lambda (key) :
+                            {if {equal? key "name"}
+                                name
+                                {if {equal? key "art"}
+                                    art
+                                    {if {equal? key "intro"}
+                                        ; Get random intro
+                                        {if {<= {rnd} 0.3} intro1 {if {<= {rnd} 0.5} intro2 intro3}}
+                                        {if {equal? key "atk"}
+                                            ; Get random attack
+                                            {if {<= {rnd} 0.5}
+                                                {seq 
+                                                 {println atktxt1}
+                                                 {if {<= {rnd} proc1} dmg1 0}}
+                                                {seq 
+                                                 {println atktxt2}
+                                                 {if {<= {rnd} proc2} dmg2 0}}}
+                                            {if {equal? key "hp"}
+                                                hp
+                                                {error "DGNError: Invalid monster key"}}}}}}}}]
+        ;; create-encounter - Creates a random encounter. The encounter has
+        ;;	  flvrtxt - The flavor text to display when entering the encounter
+        ;;	  run-enc - (player-obj -> player-obj) A function whose only argument is a player object,
+        ;;		and whose return type is a modified player object
+        [create-encounter =
+                          {lambda (flvrtxt run-enc) :
+                            {lambda (key) : 
+                              {if {equal? key "flvrtxt"}
+                                  flvrtxt
+                                  {if {equal? key "run-enc"}
+                                      run-enc
+                                      {error "DGNError: Invalid encounter key"}}}}}]
+        )
+     in
+     {seq 
+      {println welcome-string}
+      {println "What is your name, adventurer?"}
+      ;; ---- CHARACTER CREATION & GAMEPLAY FUNCTIONS ----
+      {let ([player-obj = {create-player {read-str} 10 6 2 0.1 0.65}]
+            [goblin-obj = {create-monster
+                           "Sheq" 
+                           "⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣠⣴⣶⣿⣿⣿⣿⣿⣿⣿⣶⣶⣤⣄⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
 ⠀⠀⠀⠀⠀⠀⠀⠀⠀⢠⣾⣿⡿⠟⠋⠁⠀⠀⠀⠀⠉⠙⠻⣿⣿⣿⣦⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
 ⠀⠀⠀⠀⠀⠀⠀⠀⢠⣿⣿⠏⠀⠀⠀⠀⠀⠀⠀⣀⣀⣀⣀⣀⣙⣻⢿⣿⣆⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
 ⠀⠀⠀⠀⠀⠀⠀⢀⣿⣿⡿⠀⠀⠀⠀⢀⠄⠊⢉⡁⠈⠁⠈⠤⠤⠀⠀⢀⣀⠣⣤⣄⠀⠀⠀⠀⠀⠀⠀⠀
@@ -818,21 +866,22 @@ Welcome to the
 ⠀⠀⠀⠀⠀⠘⢿⣿⣿⣷⣦⣤⣀⠀⠀⠀⣦⣄⢀⣶⡄⢐⣿⣾⣥⣿⣿⣿⣿⣶⣶⣿⣿⣿⡿⠿⠛⠙⠉⠁
 ⠀⠀⠀⠀⠀⠀⠀⠙⠛⠛⠿⣿⣿⣿⣿⣶⣿⣿⣿⡿⣿⣿⡿⠟⠛⠛⠉⠉⠉⠛⠛⠉⠀⠀⠀⠀⠀⠀⠀⠀
 ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠉⠉⠁⠈⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀"
-					  "With a shriek of rusted metal and glee, the sheq scuttles into view, eyes glinting with wicked anticipation!" 
-					  "The stench of oil and rot hits first — then the sheq appears, grinning wide, clutching a jagged blade that hums with mischief." 
-					  "Cackling from the shadows, the sheq tumbles forward, crooked teeth bared. ‘Heh! Fresh meat for my collection!"
-					  1 0.75 "The sheq lunges with manic speed, slashing wildly and laughing as sparks fly!"
-					  3 0.7 "It hurls a crude bomb made from scrap and rocks — the explosion fills the air with smoke and cruel laughter."
-					  10}]
-			[skeleton-obj = {create-monster "Skeleton"
-					  "              .7
+"With a shriek of rusted metal and glee,the sheq scuttles into view, eyes glinting with wicked anticipation!" 
+"The stench of oil and rot hits first. Then the sheq appears, grinning, clutching a blade that hums with mischief." 
+"Cackling from the shadows, the sheq tumbles forward, crooked teeth bared. ‘Heh! Fresh meat for my collection!"
+1 0.75 "The sheq lunges with manic speed, slashing wildly and laughing as sparks fly!"
+3 0.7 "It hurls a crude bomb made from scrap and rocks — the explosion fills the air with smoke and cruel laughter."
+                           10}]
+            [skeleton-obj = {create-monster
+                             "Skeleton"
+                             "              .7
             .'/
            / /
           / /
          / /
         / /
        / /                             
-	  / /
+          / /
      / /         
     / /          
   __|/
@@ -856,14 +905,16 @@ Welcome to the
                         \\\"-.__\"\"|!|\"-.__.-\".)     \\ \\
                          \"-.__\"\"\\_|\"-.__.-\"./      \\ l
                           \".__\"\"\">G>-.__.-\">       .--,_"
-					  "Bones rattle in the dark — the skeleton rises, clutching a chipped sword that remembers war long past."
-					  "A hollow clatter echoes through the corridor as a skeleton lurches into view, eye sockets glowing faintly."
-					  "Dust swirls and bones knit together — a forgotten warrior stands once more, silent but relentless."
-					  2 0.95 "The skeleton swings its rusted blade with mechanical precision, heedless of pain or mercy."
-					  3 0.8 "With a dry hiss, the skeleton lunges forward, jabbing its rusted blade toward your chest."
-					  25}]
-			[rat-obj = {create-monster "Giant Rat"
-					  "               _     __,..---\"\"-._                 ';-,
+"Bones rattle in the dark — the skeleton rises, clutching a chipped sword that remembers war long past."
+"A hollow clatter echoes through the corridor as a skeleton lurches into view, eye sockets glowing faintly."
+"Dust swirls and bones knit together — a forgotten warrior stands once more, silent but relentless."
+2 0.95 "The skeleton swings its rusted blade with mechanical precision, heedless of pain or mercy."
+3 0.8 "With a dry hiss, the skeleton lunges forward, jabbing its rusted blade toward your chest."
+25}]
+            [rat-obj =
+                     {create-monster
+                      "Giant Rat"
+                      "               _     __,..---\"\"-._                 ';-,
         ,    _/_),-\"`             '-.                `\\
        \\|.-\"`    -_)                 '.                ||
        /`   a   ,                      \\              .'/
@@ -874,14 +925,16 @@ Welcome to the
                 (((-'       __//  '--. /
                           (((-'    __//
                                  (((-'"
-					  "A massive rat scurries from the shadows, fur slick with filth and eyes burning with hunger."
-					  "You hear squeaks and skittering — then a rat the size of a dog lurches forward, teeth gnashing."
-					  "The stench of rot fills the air as a swollen, twitching rat crawls into view, tail lashing."
-					  1 0.75 "The rat leaps up, biting and clawing in a frenzy of hunger and panic."
-					  1 0.8 "It lunges again and again, its squeals echoing through the dungeon walls."
-					  8}]
-			[wolf-obj = {create-monster "Wolf"
-					  "                              __
+                      "A massive rat scurries from the shadows, fur slick with filth and eyes burning with hunger."
+                      "You hear squeaks and skittering — then a rat the size of a dog lurches forward, teeth gnashing."
+                      "The stench of rot fills the air as a swollen, twitching rat crawls into view, tail lashing."
+                      1 0.75 "The rat leaps up, biting and clawing in a frenzy of hunger and panic."
+                      1 0.8 "It lunges again and again, its squeals echoing through the dungeon walls."
+                      8}]
+            [wolf-obj =
+                      {create-monster
+                       "Wolf"
+                       "                              __
                             .d$$b
                           .' TO$;\\
                          /  : TP._;
@@ -907,160 +960,270 @@ Welcome to the
                             ;`-
                            :\\
                            ;"
-					  "A low growl cuts through the silence — a hungry wolf circles, eyes gleaming in the dark."
-					  "From the shadows leaps a gaunt wolf, fur bristling and teeth bared in a snarl of fury."
-					  "The sound of claws on stone — then a flash of grey fur as the wolf lunges into the light."
-					  2 0.9 "The wolf snaps its jaws shut with a vicious bite, saliva and fury flying!"
-					  1 0.98 "It darts in and slices with its claws before leaping back, ready to strike again."
-					  18}]                             			
-			;; handle-battle - Returns the player's object after a battle with monster has been concluded
-			[handle-battle = {lambda (player monster mod) : {let ([get-action = {lambda (self) : {seq
-											   {println "What will you do? [attack / defend]"}
-											   {let ([input = {read-str}]) 
-												in 
-												{if {|| {equal? input "attack"} {equal? input "defend"}}
-												  input
-												  {seq
-													{println {++ "Hmmmm... I don't understand \"" input "\"... Please try something else!"}}
-													{self self}}} 
-												end}}}])
-								in
-								{seq
-								  {println {monster "art"}}
-								  {println {++ {monster "intro"} "\n"}}
-								  {println {++ "Prepare to fight: " {monster "name"} " (" {round {* {monster "hp"} mod}} "♥)!"}}
-								  {let ([monster-hp = {round {* {monster "hp" } mod}}]
-										[player-dmg = {player "get-dmg"}]
-										[action = {get-action get-action}]
-										[damage-player = {lambda (damage) : {seq 
-													  {if {<= damage 0}
-														{println {++ "The " {monster "name"} " missed! You took " damage " damage."}}
-														{println {++ "You took " damage " damage."}}}
-													  {create-player {player "name"} {- {player "hp"} damage} {player "atk"} {player "rolls"} {player "def"} {player "acc"}}}}])
-									in
-									{if {equal? action "attack"}
-									  ;; And now I realize I need enemy health :D
+                       "A low growl cuts through the silence — a hungry wolf circles, eyes gleaming in the dark."
+                       "From the shadows leaps a gaunt wolf, fur bristling and teeth bared in a snarl of fury."
+                       "The sound of claws on stone — then a flash of grey fur as the wolf lunges into the light."
+                       2 0.9 "The wolf snaps its jaws shut with a vicious bite, saliva and fury flying!"
+                       1 0.98 "It darts in and slices with its claws before leaping back, ready to strike again."
+                       18}]                             			
+            ;; handle-battle - Returns the player's object after a battle with monster has been concluded
+            [handle-battle =
+                           {lambda (player monster mod) :
+                             {let ([get-action =
+                                               {lambda (self) :
+                                                 {seq
+                                                  {println "What will you do? [attack / defend]"}
+                                                  {let ([input = {read-str}]) 
+                                                    in 
+                                                    {if {|| {equal? input "attack"}
+                                                            {equal? input "defend"}}
+                                                        input
+                                                        {seq
+                                                         {println {++
+                                                                   "Hmmmm... I don't understand \""
+                                                                   input
+                                                                   "\"... Please try something else!"}}
+                                                         {self self}}} 
+                                                    end}}}])
+                               in
+                               {seq
+                                {println {monster "art"}}
+                                {println {++ {monster "intro"} "\n"}}
+                                {println {++ "Prepare to fight: "
+                                             {monster "name"}
+                                             " ("
+                                             {round {* {monster "hp"} mod}} "♥)!"}}
+                                {let ([monster-hp = {round {* {monster "hp" } mod}}]
+                                      [player-dmg = {player "get-dmg"}]
+                                      [action = {get-action get-action}]
+                                      [damage-player = {lambda (damage) :
+                                                         {seq 
+                                                          {if {<= damage 0}
+                                                              {println {++ "The "
+                                                                           {monster "name"}
+                                                                           " missed! You took "
+                                                                           damage
+                                                                           " damage."}}
+                                                              {println {++
+                                                                        "You took "
+                                                                        damage
+                                                                        " damage."}}}
+                                                          {create-player {player "name"}
+                                                                         {- {player "hp"} damage}
+                                                                         {player "atk"}
+                                                                         {player "rolls"}
+                                                                         {player "def"}
+                                                                         {player "acc"}}}}])
+                                  in
+                                  {if {equal? action "attack"}
+                                      ;; And now I realize I need enemy health :D
 									  
-									  ; Attack monster
-									  {if {<= {rnd} {player "acc"}}
-										; Successfully hit monster
-										{if {<= monster-hp player-dmg}
-										  {seq
-											{println {++ "Your swing connects, killing the " {monster "name"} " in a single, swift blow!!!"}}
-											player}
-										  {seq
-											{println {++ "Your attack wasn't enough kill " {monster "name"} " (" player-dmg "✶ -> " monster-hp "♥)" "!"}}
-											{damage-player {round {* {monster "atk"} mod}}}}}
-										; Missed monster
-										{seq
-										  {println "Your attack missed!"}
-										  {damage-player {round {* {monster "atk"} mod}}}}}
+                                      ; Attack monster
+                                      {if {<= {rnd} {player "acc"}}
+                                          ; Successfully hit monster
+                                          {if {<= monster-hp player-dmg}
+                                              {seq
+                                               {println {++ "Your swing connects, killing the "
+                                                            {monster "name"}
+                                                            " in a single, swift blow!!!"}}
+                                               player}
+                                              {seq
+                                               {println {++ "Your attack wasn't enough kill "
+                                                            {monster "name"}
+                                                            " ("
+                                                            player-dmg
+                                                            "✶ -> "
+                                                            monster-hp
+                                                            "♥)"
+                                                            "!"}}
+                                               {damage-player {round {* {monster "atk"} mod}}}}}
+                                          ; Missed monster
+                                          {seq
+                                           {println "Your attack missed!"}
+                                           {damage-player {round {* {monster "atk"} mod}}}}}
 									  
-									  ; Defend from monster - Return player with (HP - (DMG TAKEN * (1 - DEF)))
-									  {damage-player {* {round {* {monster "atk"} mod}} {- 1 {player "def"}}}}}
-									end}}                              
-								end}}])
-		in
-		{seq 
-		  {println {++ "Your player name is: " {player-obj "name"} " and your lucky number is " {round-to-place {rnd} 0.001}}}
-		  ;; ---- MAIN GAMEPLAY LOOP ----
-		  {let ([chest-enc = {create-encounter 
-						 "The air grows still as you enter — at the center of the chamber rests a lone chest, bathed in a thin shaft of light."
-						 {lambda (player) : {seq
-							{println "Open chest? [Y/N]"}
-							{if {equal? {read-str} "Y"}
-							  ;; Opens chest
-							  {if {<= {rnd} 0.9}
-								;; Tool
-								{if {<= {rnd} 0.6}
-								  ;; Weapon
-								  {if {<= {rnd} 0.5}
-									;; Basic sword
-									{seq
-									  {println "The lid creaks open, the sound echoing through the chamber."}
-									  {println "You found a Rusted Iron Sword (2D8✶ 0.85→)! Equip? [Y/N]"}
-									  {if {equal? {read-str} "Y"}
-										{create-player {player "name"} {player "hp"} 8 2 {player "def"} 0.85}
-										player}}
-									;; Better sword
-									{if {<= {rnd} 0.6}
-									  ;; Uncommon sword
-									  {seq
-										{println "The lid creaks open, the sound echoing through the chamber."}
-										{println "You found a Steel Longword (3D6✶ 0.85→)! Equip? [Y/N]"}
-										{if {equal? {read-str} "Y"}
-										  {create-player {player "name"} {player "hp"} 6 3 {player "def"} 0.85}
-										  player}}
-									  ;; Super rare swords
-									  {if {<= {rnd} 0.7}
-										{seq
-										  {println "The lid creaks open, the sound echoing through the chamber."}
-										  {println "You found an Emberfang Blade (3D8✶ 0.9→)! Equip? [Y/N]"}
-										  {if {equal? {read-str} "Y"}
-											{create-player {player "name"} {player "hp"} 8 3 {player "def"} 0.9}
-											player}}
-										{seq
-										  {println "The lid creaks open, the sound echoing through the chamber."}
-										  {println "You found Astral Edge (5D6✶ 0.9→)! Equip? [Y/N]"}
-										  {if {equal? {read-str} "Y"}
-											{create-player {player "name"} {player "hp"} 6 5 {player "def"} 0.9}
-											player}}}}}
-								  ;; Armor
-								  {seq
-									{println "You found armor (DEF ❖)!"}
-									; Increases at a rate of ((1 + DEF) / 2.25)
-									{create-player {player "name"} {player "hp"} {player "atk"} {player "rolls"} {round-to-place {/ {+ 1 {player "def"}} 2.25} 0.001} {player "acc"}}}}
-								{seq 
-								  {println "It's filled with... gold coins, precious jewels, and heirlooms? How useless!"}
-								  player}}
-							  ;; Walks away
-							  {seq
-								{println "You walk away, leaving the mysteries of the chest behind."}
-								player}}}}}]
-			  [spring-enc = {create-encounter 
-								"Fresh water trickles between smooth rocks, feeding a patch of green life in the dungeon’s gloom."
-								{lambda (player) : {let ([new-health = {round-to-place {+ {player "hp"} {+ {/ {- 10 {player "hp"}} 2} 1}} 0.01}]) in {seq 
-								  {println {++ "You are healed to " {if {<= new-health 10} new-health 10} " HP (♥)!"}} 
-								  {create-player {player "name"} {if {<= new-health 10} new-health 10} {player "atk"} {player "rolls"} {player "def"} {player "acc"}}} 
-								end}}}]
-			  ;; handle-encounter - Returns the player's object after a random encounter
-			  [handle-encounter = {lambda (player encounter) : {seq
-								{println {encounter "flvrtxt"}}
-								{{encounter "run-enc"} player}}}]
-			  )
-			in
-			{let
-			  ;; main-loop - handles the main gameplay loop
-			  ([main-loop = {lambda (self floor# player) : 
-						   {if {<= {player "hp"} 0}
-							  ;; Game over
-							  {seq 
-								{println "\n╭────────────────────────────────────────────────────────────╮\n"}
-								{println game-over-string}
-								{println {++ "Floors encountered: " {- floor# 1}}}
-								{println {++ "Great adventuring, " {player "name"} "!"}}
-								{println "\n╰────────────────────────────────────────────────────────────╯"}}
-							  ;; Explore floor
-							  {let ([monster = {if {<= {rnd} 0.35} {if {<= {rnd} 0.45} skeleton-obj wolf-obj} {if {<= {rnd} 0.4} goblin-obj rat-obj}}]
-									[encounter = {if {<= {rnd} 0.35} chest-enc spring-enc}]
-									[floor-mod = {+ 1 {* floor# 0.005}}])
-								in
-								{seq 
-								  {println {++ "\n╭──────────────────────────────  Floor #: " floor# "  ──────────────────────────────╮"}}
-								  {println {++ {player "hp"} " HP (♥)  |  " 
-											{player "rolls"} "D" {player "atk"} " ATTACK (✶)  |  "
-											{player "acc"} " ACCURACY (→)  |  "
-											{player "def"} " DEF (❖)"}}
-								  {self self {+ floor# 1} {handle-battle {if {<= {rnd} 0.2} {handle-encounter player encounter} player} monster floor-mod}}}
-								end}}}]) 
-			  in 
-			  {main-loop main-loop 1 player-obj} 
-			  end}
-			end}}
-		end}}
-	end})
+                                      ; Defend from monster - Return player with (HP - (DMG TAKEN * (1 - DEF)))
+                                      {damage-player {* {round {* {monster "atk"} mod}} {- 1 {player "def"}}}}}
+                                  end}}                              
+                               end}}])
+        in
+        {seq 
+         {println {++ "Your player name is: "
+                      {player-obj "name"}
+                      " and your lucky number is "
+                      {round-to-place {rnd} 0.001}}}
+         ;; ---- MAIN GAMEPLAY LOOP ----
+         {let ([chest-enc =
+                          {create-encounter 
+                           "The air grows still as you enter
+                              — at the center of the chamber rests a lone chest, bathed in a thin shaft of light."
+                           {lambda (player) :
+                             {seq
+                              {println "Open chest? [Y/N]"}
+                              {if {equal? {read-str} "Y"}
+                                  ;; Opens chest
+                                  {if {<= {rnd} 0.9}
+                                      ;; Tool
+                                      {if {<= {rnd} 0.6}
+                                          ;; Weapon
+                                          {if {<= {rnd} 0.5}
+                                              ;; Basic sword
+                                              {seq
+                                               {println "The lid creaks open, the sound echoing through the chamber."}
+                                               {println "You found a Rusted Iron Sword (2D8✶ 0.85→)! Equip? [Y/N]"}
+                                               {if {equal? {read-str} "Y"}
+                                                   {create-player
+                                                    {player "name"}
+                                                    {player "hp"}
+                                                    8
+                                                    2
+                                                    {player "def"}
+                                                    0.85}
+                                                   player}}
+                                              ;; Better sword
+                                              {if {<= {rnd} 0.6}
+                                                  ;; Uncommon sword
+                                                  {seq
+                                                   {println "The lid creaks open,
+                                                            the sound echoing through the chamber."}
+                                                   {println "You found a Steel Longword (3D6✶ 0.85→)! Equip? [Y/N]"}
+                                                   {if {equal? {read-str} "Y"}
+                                                       {create-player
+                                                        {player "name"}
+                                                        {player "hp"}
+                                                        6
+                                                        3
+                                                        {player "def"}
+                                                        0.85}
+                                                       player}}
+                                                  ;; Super rare swords
+                                                  {if {<= {rnd} 0.7}
+                                                      {seq
+                                                       {println
+                                                        "The lid creaks open, the sound echoes through the chamber."}
+                                                       {println
+                                                        "You found an Emberfang Blade (3D8✶ 0.9→)! Equip? [Y/N]"}
+                                                       {if {equal? {read-str} "Y"}
+                                                           {create-player
+                                                            {player "name"}
+                                                            {player "hp"}
+                                                            8
+                                                            3
+                                                            {player "def"}
+                                                            0.9}
+                                                           player}}
+                                                      {seq
+                                                       {println
+                                                        "The lid creaks open, the sound echoing through the chamber."}
+                                                       {println
+                                                        "You found Astral Edge (5D6✶ 0.9→)! Equip? [Y/N]"}
+                                                       {if {equal? {read-str} "Y"}
+                                                           {create-player
+                                                            {player "name"}
+                                                            {player "hp"}
+                                                            6
+                                                            5
+                                                            {player "def"}
+                                                            0.9}
+                                                           player}}}}}
+                                          ;; Armor
+                                          {seq
+                                           {println "You found armor (DEF ❖)!"}
+                                           ; Increases at a rate of ((1 + DEF) / 2.25)
+                                           {create-player {player "name"}
+                                                          {player "hp"}
+                                                          {player "atk"}
+                                                          {player "rolls"}
+                                                          {round-to-place {/ {+ 1 {player "def"}} 2.25} 0.001}
+                                                          {player "acc"}}}}
+                                      {seq 
+                                       {println
+                                        "It's filled with... gold coins, precious jewels, and heirlooms? How useless!"}
+                                       player}}
+                                  ;; Walks away
+                                  {seq
+                                   {println "You walk away, leaving the mysteries of the chest behind."}
+                                   player}}}}}]
+               [spring-enc = {create-encounter 
+                              "Fresh water trickles between smooth rocks,feeding a patch of green life in the dungeon."
+                              {lambda (player) :
+                                {let ([new-health = {round-to-place
+                                                     {+ {player "hp"}
+                                                        {+ {/ {- 10 {player "hp"}} 2} 1}}
+                                                     0.01}])
+                                  in
+                                  {seq 
+                                   {println {++ "You are healed to "
+                                                {if
+                                                 {<= new-health 10}
+                                                 new-health
+                                                 10}
+                                                " HP (♥)!"}} 
+                                   {create-player {player "name"}
+                                                  {if {<= new-health 10}
+                                                      new-health
+                                                      10}
+                                                  {player "atk"}
+                                                  {player "rolls"}
+                                                  {player "def"}
+                                                  {player "acc"}}} 
+                                  end}}}]
+               ;; handle-encounter - Returns the player's object after a random encounter
+               [handle-encounter =
+                                 {lambda (player encounter) :
+                                   {seq
+                                    {println {encounter "flvrtxt"}}
+                                    {{encounter "run-enc"} player}}}])
+           in
+           {let
+               ;; main-loop - handles the main gameplay loop
+               ([main-loop =
+                           {lambda (self floor# player) : 
+                             {if {<= {player "hp"} 0}
+                                 ;; Game over
+                                 {seq 
+                                  {println "\n╭────────────────────────────────────────────────────────────╮\n"}
+                                  {println game-over-string}
+                                  {println {++ "Floors encountered: " {- floor# 1}}}
+                                  {println {++ "Great adventuring, " {player "name"} "!"}}
+                                  {println "\n╰────────────────────────────────────────────────────────────╯"}}
+                                 ;; Explore floor
+                                 {let ([monster =
+                                                {if {<= {rnd} 0.35}
+                                                    {if {<= {rnd} 0.45}
+                                                        skeleton-obj
+                                                        wolf-obj}
+                                                    {if {<= {rnd} 0.4}
+                                                        goblin-obj
+                                                        rat-obj}}]
+                                       [encounter = {if {<= {rnd} 0.35}
+                                                        chest-enc
+                                                        spring-enc}]
+                                       [floor-mod = {+ 1 {* floor# 0.005}}])
+                                   in
+                                   {seq 
+                                    {println {++ "\n╭──────────────────────────────  Floor #: "
+                                                 floor#
+                                                 "  ──────────────────────────────╮"}}
+                                    {println {++ {player "hp"} " HP (♥)  |  " 
+                                                 {player "rolls"} "D" {player "atk"} " ATTACK (✶)  |  "
+                                                 {player "acc"} " ACCURACY (→)  |  "
+                                                 {player "def"} " DEF (❖)"}}
+                                    {self self {+ floor# 1}
+                                          {handle-battle {if {<= {rnd} 0.2}
+                                                             {handle-encounter player encounter}
+                                                             player}
+                                                         monster
+                                                         floor-mod}}}
+                                   end}}}]) 
+             in 
+             {main-loop main-loop 1 player-obj} 
+             end}
+           end}}
+        end}}
+     end})
 
-(top-interp dungeon-game)
+; (top-interp dungeon-game)
 
 
 
