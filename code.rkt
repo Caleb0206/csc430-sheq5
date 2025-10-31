@@ -865,7 +865,7 @@ Welcome to the
                                                          ;; If rolls left, do (TOTAL + round(RND * ATK))                   
                                                                             {self self atk
                                                                                   {- rolls 1}
-                                                                                  {+ total {round {* {rnd} atk}}}}}}]) 
+                                                                                  {+ total {ceil {* {rnd} atk}}}}}}]) 
                                                          in {get-dmg get-dmg atk rolls 0} end}
                                                        {error "DGNError: Invalid player key"}}}}}}}}}}]
         ;; create-monster - Creates a monster object. The monster has a 
@@ -948,7 +948,7 @@ Welcome to the
 "Cackling from the shadows, the sheq tumbles forward, crooked teeth bared. ‘Heh! Fresh meat for my collection!"
 1 0.75 "The sheq lunges with manic speed, slashing wildly and laughing as sparks fly!"
 3 0.7 "It hurls a crude bomb made from scrap and rocks — the explosion fills the air with smoke and cruel laughter."
-                           10}]
+                           5}]
             [skeleton-obj = {create-monster
                              "Skeleton"
                              "              .7
@@ -987,7 +987,7 @@ Welcome to the
 "Dust swirls and bones knit together — a forgotten warrior stands once more, silent but relentless."
 2 0.95 "The skeleton swings its rusted blade with mechanical precision, heedless of pain or mercy."
 3 0.8 "With a dry hiss, the skeleton lunges forward, jabbing its rusted blade toward your chest."
-25}]
+10}]
             [rat-obj =
                      {create-monster
                       "Giant Rat"
@@ -1007,7 +1007,7 @@ Welcome to the
                       "The stench of rot fills the air as a swollen, twitching rat crawls into view, tail lashing."
                       1 0.75 "The rat leaps up, biting and clawing in a frenzy of hunger and panic."
                       1 0.8 "It lunges again and again, its squeals echoing through the dungeon walls."
-                      8}]
+                      3}]
             [wolf-obj =
                       {create-monster
                        "Wolf"
@@ -1042,7 +1042,7 @@ Welcome to the
                        "The sound of claws on stone — then a flash of grey fur as the wolf lunges into the light."
                        2 0.9 "The wolf snaps its jaws shut with a vicious bite, saliva and fury flying!"
                        1 0.98 "It darts in and slices with its claws before leaping back, ready to strike again."
-                       18}]                             			
+                       9}]                             			
             ;; handle-battle - Returns the player's object after a battle with monster has been concluded
             [handle-battle =
                            {lambda (player monster mod) :
@@ -1102,7 +1102,9 @@ Welcome to the
                                               {seq
                                                {println {++ "Your swing connects, killing the "
                                                             {monster "name"}
-                                                            " in a single, swift blow!!!"}}
+                                                            " in a single, swift blow ("
+															player-dmg
+															"✶)!!"}}
                                                player}
                                               {seq
                                                {println {++ "Your attack wasn't enough kill "
@@ -1146,7 +1148,7 @@ Welcome to the
                                               ;; Basic sword
                                               {seq
                                                {println "The lid creaks open, the sound echoing through the chamber."}
-                                               {println "You found a Rusted Iron Sword (2D8✶ 0.85→)! Equip? [Y/N]"}
+                                               {println "You found a Rusted Iron Sword (2D8✶ 0.7→)! Equip? [Y/N]"}
                                                {if {equal? {read-str} "Y"}
                                                    {create-player
                                                     {player "name"}
@@ -1154,7 +1156,7 @@ Welcome to the
                                                     8
                                                     2
                                                     {player "def"}
-                                                    0.85}
+                                                    0.7}
                                                    player}}
                                               ;; Better sword
                                               {if {<= {rnd} 0.6}
@@ -1162,7 +1164,7 @@ Welcome to the
                                                   {seq
                                                    {println "The lid creaks open,
                                                             the sound echoing through the chamber."}
-                                                   {println "You found a Steel Longword (3D6✶ 0.85→)! Equip? [Y/N]"}
+                                                   {println "You found a Steel Longword (3D6✶ 0.75→)! Equip? [Y/N]"}
                                                    {if {equal? {read-str} "Y"}
                                                        {create-player
                                                         {player "name"}
@@ -1170,7 +1172,7 @@ Welcome to the
                                                         6
                                                         3
                                                         {player "def"}
-                                                        0.85}
+                                                        0.75}
                                                        player}}
                                                   ;; Super rare swords
                                                   {if {<= {rnd} 0.7}
@@ -1178,7 +1180,7 @@ Welcome to the
                                                        {println
                                                         "The lid creaks open, the sound echoes through the chamber."}
                                                        {println
-                                                        "You found an Emberfang Blade (3D8✶ 0.9→)! Equip? [Y/N]"}
+                                                        "You found an Emberfang Blade (3D8✶ 0.8→)! Equip? [Y/N]"}
                                                        {if {equal? {read-str} "Y"}
                                                            {create-player
                                                             {player "name"}
@@ -1186,13 +1188,13 @@ Welcome to the
                                                             8
                                                             3
                                                             {player "def"}
-                                                            0.9}
+                                                            0.8}
                                                            player}}
                                                       {seq
                                                        {println
                                                         "The lid creaks open, the sound echoing through the chamber."}
                                                        {println
-                                                        "You found Astral Edge (5D6✶ 0.9→)! Equip? [Y/N]"}
+                                                        "You found Astral Edge (5D6✶ 0.8→)! Equip? [Y/N]"}
                                                        {if {equal? {read-str} "Y"}
                                                            {create-player
                                                             {player "name"}
@@ -1200,7 +1202,7 @@ Welcome to the
                                                             6
                                                             5
                                                             {player "def"}
-                                                            0.9}
+                                                            0.8}
                                                            player}}}}}
                                           ;; Armor
                                           {seq
@@ -1272,10 +1274,10 @@ Welcome to the
                                                     {if {<= {rnd} 0.4}
                                                         goblin-obj
                                                         rat-obj}}]
-                                       [encounter = {if {<= {rnd} 0.35}
+                                       [encounter = {if {<= {rnd} 0.65}
                                                         chest-enc
                                                         spring-enc}]
-                                       [floor-mod = {+ 1 {* floor# 0.005}}])
+                                       [floor-mod = {+ 1 {* floor# 0.03}}])
                                    in
                                    {seq 
                                     {println {++ "\n╭──────────────────────────────  Floor #: "
@@ -1286,11 +1288,9 @@ Welcome to the
                                                  {player "acc"} " ACCURACY (→)  |  "
                                                  {player "def"} " DEF (❖)"}}
                                     {self self {+ floor# 1}
-                                          {handle-battle {if {<= {rnd} 0.2}
-                                                             {handle-encounter player encounter}
-                                                             player}
-                                                         monster
-                                                         floor-mod}}}
+                                      {if {<= {rnd} 0.7} 
+										{handle-battle player monster floor-mod} 
+										{handle-encounter player encounter}}}}    
                                    end}}}]) 
              in 
              {main-loop main-loop 1 player-obj} 
