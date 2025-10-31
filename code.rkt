@@ -741,7 +741,7 @@
 ;                              //.-~~~-~_--~- |-------~~~~~~~~
 ;                                     //.-~~~--\
 ;What is your name, adventurer?
-;> AidenAndCaleb
+; > AidenAndCaleb
 ;Your player name is: AidenAndCaleb and your lucky number is 0.538
 
 ;╭──────────────────────────────  Floor #: 1  ──────────────────────────────╮
@@ -781,7 +781,7 @@
 
 ;Prepare to fight: Skeleton (25.0♥)!
 ;What will you do? [attack / defend]
-;> defend
+; > defend
 ;With a dry hiss, the skeleton lunges forward, jabbing its rusted blade toward your chest.
 ;You took 2.7 damage. 
 
@@ -1290,4 +1290,4 @@ Welcome to the
         end}}
      end})
 
-(top-interp example-program)
+; (top-interp example-program)
