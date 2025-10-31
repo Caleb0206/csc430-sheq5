@@ -1030,14 +1030,14 @@ Welcome to the
                                                             monster-hp
                                                             "♥)"
                                                             "!"}}
-                                               {damage-player {round {* {monster "atk"} mod}}}}}
+                                               {damage-player {round-to-place {* {monster "atk"} mod} 0.01}}}}
                                           ; Missed monster
                                           {seq
                                            {println "Your attack missed!"}
-                                           {damage-player {round {* {monster "atk"} mod}}}}}
+                                           {damage-player {round-to-place {* {monster "atk"} mod} 0.01}}}}
 									  
                                       ; Defend from monster - Return player with (HP - (DMG TAKEN * (1 - DEF)))
-                                      {damage-player {* {round {* {monster "atk"} mod}} {- 1 {player "def"}}}}}
+                                      {damage-player {round-to-place {* {* {monster "atk"} mod} {- 1 {player "def"}}} 0.01}}}
                                   end}}                              
                                end}}])
         in
@@ -1202,7 +1202,7 @@ Welcome to the
                                     {println {++ {player "hp"} " HP (♥)  |  " 
                                                  {player "rolls"} "D" {player "atk"} " ATTACK (✶)  |  "
                                                  {player "acc"} " ACCURACY (→)  |  "
-                                                 {player "def"} " DEF (❖)"}}
+                                                 {player "def"} " DEF (❖)" "\n"}}
                                     {self self {+ floor# 1}
                                       {if {<= {rnd} 0.7} 
 										{handle-battle player monster floor-mod} 
