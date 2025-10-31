@@ -369,15 +369,6 @@
     [((cons fa ra) (cons fv rv))
      (create-env ra rv (cons (Binding fa fv) env))]))
 
-
-'{let {[while = 29]}
-  in
-  {seq {while := {lambda {guard body} :
-                   {if {guard}
-                       {lanbda () : {body}}
-                       stop }}}}
-   end}
-
 ;; ---- Tests ----
 
 ;; Large test
@@ -1103,8 +1094,8 @@ Welcome to the
                                                {println {++ "Your swing connects, killing the "
                                                             {monster "name"}
                                                             " in a single, swift blow ("
-															player-dmg
-															"✶)!!"}}
+                                                            player-dmg
+                                                            "✶)!!"}}
                                                player}
                                               {seq
                                                {println {++ "Your attack wasn't enough kill "
@@ -1288,9 +1279,9 @@ Welcome to the
                                                  {player "acc"} " ACCURACY (→)  |  "
                                                  {player "def"} " DEF (❖)"}}
                                     {self self {+ floor# 1}
-                                      {if {<= {rnd} 0.7} 
-										{handle-battle player monster floor-mod} 
-										{handle-encounter player encounter}}}}    
+                                          {if {<= {rnd} 0.7} 
+                                              {handle-battle player monster floor-mod} 
+                                              {handle-encounter player encounter}}}}    
                                    end}}}]) 
              in 
              {main-loop main-loop 1 player-obj} 
