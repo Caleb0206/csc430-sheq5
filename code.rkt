@@ -935,7 +935,7 @@ Welcome to the
 ⠀⠀⠀⠀⠀⠀⠀⠙⠛⠛⠿⣿⣿⣿⣿⣶⣿⣿⣿⡿⣿⣿⡿⠟⠛⠛⠉⠉⠉⠛⠛⠉⠀⠀⠀⠀⠀⠀⠀⠀
 ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠉⠉⠁⠈⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀"
 "With a shriek of rusted metal and glee,the sheq scuttles into view, eyes glinting with wicked anticipation!" 
-"The stench of oil and rot hits first. Then the sheq appears, grinning, clutching a blade that hums with mischief." 
+"The stench of oil and rot hits first. Then the sheq appears, grinning, clutching a blade that hums with mischief."
 "Cackling from the shadows, the sheq tumbles forward, crooked teeth bared. ‘Heh! Fresh meat for my collection!"
 1 0.75 "The sheq lunges with manic speed, slashing wildly and laughing as sparks fly!"
 3 0.7 "It hurls a crude bomb made from scrap and rocks — the explosion fills the air with smoke and cruel laughter."
@@ -1077,7 +1077,8 @@ Welcome to the
                                                                         damage
                                                                         " damage."}}}
                                                           {create-player {player "name"}
-                                                                         {round-to-place {- {player "hp"} damage} 0.001}
+                                                                         {round-to-place
+                                                                          {- {player "hp"} damage} 0.001}
                                                                          {player "atk"}
                                                                          {player "rolls"}
                                                                          {player "def"}
@@ -1113,7 +1114,8 @@ Welcome to the
                                            {damage-player {round-to-place {* {monster "atk"} mod} 0.01}}}}
 									  
                                       ; Defend from monster - Return player with (HP - (DMG TAKEN * (1 - DEF)))
-                                      {damage-player {round-to-place {* {* {monster "atk"} mod} {- 1 {player "def"}}} 0.01}}}
+                                      {damage-player {round-to-place
+                                                      {* {* {monster "atk"} mod} {- 1 {player "def"}}} 0.01}}}
                                   end}}                              
                                end}}])
         in
