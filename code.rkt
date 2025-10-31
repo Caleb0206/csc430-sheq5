@@ -418,14 +418,6 @@
            (lambda () (top-interp
                        '{{lambda (ignoreit) : {ignoreit {/ 52 {+ 0 0}}}} {lambda (x) : {+ 7 x}}})))
 
-#;(top-interp
-   '{seq
-     {println "What is your favorite number?"}
-     {let ([n = {read-num}])
-       in
-       {println {++ "Interesting, you picked " n ". What a choice!"}}
-       end}})
-
 ;; ---- interp tests ----
 (check-equal? (interp (IdC 'true) top-env) #t)
 
