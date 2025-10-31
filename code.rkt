@@ -726,10 +726,7 @@ Welcome to the
 	 ;; Rounds n to a given decimal place dec
 	 ;; Example: n = 3.14159, dec = 0.001, result = 3.142
 	 [round-to-place = {lambda (n dec) : {* dec {round {/ n dec}}}}]
-	 ;; This mod only works with positive numbers fyi
-	 [mod = {lambda (self n b) : {if {n < b} n {self {- n b} b}}}]
 	 [|| = {lambda (a b) : {if a true {if b true false}}}]
-	 [&& = {lambda (a b) : {if a {if b true false} false}}]
 	 [create-player = {lambda (name hp atk rolls def acc) : {lambda (key) : 
 			 {if {equal? key "name"} 
 				name 
