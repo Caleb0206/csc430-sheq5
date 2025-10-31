@@ -942,20 +942,8 @@ Welcome to the
                            5}]
             [skeleton-obj = {create-monster
                              "Skeleton"
-                             "              .7
-            .'/
-           / /
-          / /
-         / /
-        / /
-       / /                             
-          / /
-     / /         
-    / /          
-  __|/
-,-\\__\\
-|f-\"Y\\|
-\\()7L/
+                             "              
+
  cgD                            __ _
  |\\(                          .'  Y '>,
   \\ \\                        / _   _   \\
@@ -1155,8 +1143,8 @@ Welcome to the
                                               {if {<= {rnd} 0.6}
                                                   ;; Uncommon sword
                                                   {seq
-                                                   {println "The lid creaks open,
-                                                            the sound echoing through the chamber."}
+                                                   {println "The lid creaks open, \
+the sound echoing through the chamber."}
                                                    {println "You found a Steel Longword (3D6✶ 0.75→)! Equip? [Y/N]"}
                                                    {if {equal? {read-str} "Y"}
                                                        {create-player
@@ -1276,12 +1264,12 @@ Welcome to the
                                     {println {++ "\n╭──────────────────────────────  Floor #: "
                                                  floor#
                                                  "  ──────────────────────────────╮"}}
-                                    {println {++ {player "hp"} " HP (♥)  |  " 
+                                    {println {++ {round-to-place {player "hp"} 0.01} " HP (♥)  |  " 
                                                  {player "rolls"} "D" {player "atk"} " ATTACK (✶)  |  "
                                                  {player "acc"} " ACCURACY (→)  |  "
                                                  {player "def"} " DEF (❖)" "\n"}}
                                     {self self {+ floor# 1}
-                                          {if {<= {rnd} 0.7} 
+                                          {if {<= {rnd} 0.75} 
                                               {handle-battle player monster floor-mod} 
                                               {handle-encounter player encounter}}}}    
                                    end}}}]) 
